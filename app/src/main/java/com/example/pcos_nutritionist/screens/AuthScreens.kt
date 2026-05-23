@@ -36,7 +36,8 @@ import com.example.pcos_nutritionist.utils.AuthState
 
 @Composable
 fun LoginScreen(
-    onLoginSuccess: (String) -> Unit
+    onLoginSuccess: (String) -> Unit,
+    onNavigateToRegistration: () -> Unit = {}
 ) {
     val authViewModel: AuthViewModel = viewModel()
     val authState by authViewModel.authState.collectAsState()
@@ -163,6 +164,16 @@ fun LoginScreen(
                 modifier = Modifier.padding(top = 8.dp)
             )
         }
+
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        Text(
+            text = "Nutritionist Registration",
+            color = PrimaryViolet,
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.clickable { onNavigateToRegistration() }
+        )
 
         Spacer(modifier = Modifier.height(24.dp))
     }

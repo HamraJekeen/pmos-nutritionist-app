@@ -131,6 +131,18 @@ def initialize_db(conn):
                 created_at DATETIME DEFAULT GETDATE()
             )
         """)
+        cursor.execute("""
+            IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='nutritionist_registrations' and xtype='U')
+            CREATE TABLE nutritionist_registrations (
+                id INT IDENTITY(1,1) PRIMARY KEY,
+                name NVARCHAR(255),
+                email VARCHAR(255) UNIQUE,
+                slmc_number VARCHAR(100),
+                nic_number VARCHAR(100),
+                status VARCHAR(50) DEFAULT 'Pending',
+                created_at DATETIME DEFAULT GETDATE()
+            )
+        """)
         conn.commit()
     except Exception as e:
         print("Error initializing DB:", e)
@@ -207,6 +219,24 @@ class HistoricalPlanResponse(BaseModel):
     plan_data: Dict[str, Dict[str, Dict[str, str]]]
     notes: str
     patient_inputs: Dict[str, Any]
+
+class NutritionistRegistrationInput(BaseModel):
+    name: str
+    email: str
+    slmc_number: str
+    nic_number: str
+
+class NutritionistRegistrationResponse(BaseModel):
+    id: int
+    name: str
+    email: str
+    slmc_number: str
+    nic_number: str
+    status: str
+    created_at: str
+
+class AdminVerifyInput(BaseModel):
+    registration_id: int
 
 # Condition mapping
 condition_to_categories = {
@@ -883,6 +913,101 @@ def answer_question(input_data: AnswerInput):
         return {"message": "Answer submitted"}
     except Exception as e:
         return HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/nutritionist/register")
+def register_nutritionist(input_data: NutritionistRegistrationInput):
+    try:
+        conn = get_sql_connection()
+        cursor = conn.cursor()
+        
+        # Check if email already exists
+        cursor.execute("SELECT id FROM nutritionist_registrations WHERE email = ?", input_data.email)
+        if cursor.fetchone():
+            return HTTPException(status_code=400, detail="Email already registered")
+            
+        cursor.execute("""
+            INSERT INTO nutritionist_registrations (name, email, slmc_number, nic_number)
+            VALUES (?, ?, ?, ?)
+        """, input_data.name, input_data.email, input_data.slmc_number, input_data.nic_number)
+        
+        conn.commit()
+        conn.close()
+        return {"message": "Registration submitted successfully. Pending admin approval."}
+    except Exception as e:
+        return HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/admin/nutritionists/pending", response_model=List[NutritionistRegistrationResponse])
+def get_pending_nutritionists():
+    try:
+        conn = get_sql_connection()
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT id, name, email, slmc_number, nic_number, status, created_at
+            FROM nutritionist_registrations
+            WHERE status = 'Pending'
+            ORDER BY created_at ASC
+        """)
+        rows = cursor.fetchall()
+        conn.close()
+        
+        results = []
+        for r in rows:
+            results.append(NutritionistRegistrationResponse(
+                id=r[0],
+                name=r[1],
+                email=r[2],
+                slmc_number=r[3],
+                nic_number=r[4],
+                status=r[5],
+                created_at=r[6].strftime("%Y-%m-%d %H:%M:%S") if r[6] else ""
+            ))
+        return results
+    except Exception as e:
+        return HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/admin/nutritionists/verify")
+def verify_nutritionist(input_data: AdminVerifyInput):
+    try:
+        conn = get_sql_connection()
+        cursor = conn.cursor()
+        cursor.execute("""
+            UPDATE nutritionist_registrations
+            SET status = 'Verified'
+            WHERE id = ?
+        """, input_data.registration_id)
+        if cursor.rowcount == 0:
+            return HTTPException(status_code=404, detail="Registration not found")
+            
+        conn.commit()
+        conn.close()
+        return {"message": "Nutritionist verified successfully"}
+    except Exception as e:
+        return HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/user/role")
+def get_user_role(email: str):
+    email = email.lower().strip()
+    if email == "hamrajekeen@gmail.com":
+        return {"role": "Admin"}
+        
+    try:
+        conn = get_sql_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT status FROM nutritionist_registrations WHERE email = ?", email)
+        row = cursor.fetchone()
+        conn.close()
+        
+        if row and row[0] == 'Verified':
+            return {"role": "Nutritionist"}
+        elif email == "nutritionisthamra@gmail.com":
+            return {"role": "Nutritionist"} # Legacy fallback
+            
+        return {"role": "Patient"}
+    except Exception as e:
+        # Fallback in case of DB error
+        if email == "nutritionisthamra@gmail.com":
+            return {"role": "Nutritionist"}
+        return {"role": "Patient"}
 
 if __name__ == "__main__":
     import uvicorn

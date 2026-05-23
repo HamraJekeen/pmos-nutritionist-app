@@ -8,6 +8,8 @@ import com.example.pcos_nutritionist.screens.LoginScreen
 import com.example.pcos_nutritionist.screens.SplashScreen
 import com.example.pcos_nutritionist.screens.PatientDashboardScreen
 import com.example.pcos_nutritionist.screens.NutritionistDashboardScreen
+import com.example.pcos_nutritionist.screens.AdminDashboardScreen
+import com.example.pcos_nutritionist.screens.NutritionistRegistrationScreen
 
 @Composable
 fun AppNavigation() {
@@ -27,11 +29,14 @@ fun AppNavigation() {
         composable("login") {
             LoginScreen(
                 onLoginSuccess = { role ->
-                    if (role == "Patient") {
-                        navController.navigate("patient_dashboard") { popUpTo("login") { inclusive = true } }
-                    } else {
-                        navController.navigate("nutritionist_dashboard") { popUpTo("login") { inclusive = true } }
+                    when (role) {
+                        "Admin" -> navController.navigate("admin_dashboard") { popUpTo("login") { inclusive = true } }
+                        "Nutritionist" -> navController.navigate("nutritionist_dashboard") { popUpTo("login") { inclusive = true } }
+                        else -> navController.navigate("patient_dashboard") { popUpTo("login") { inclusive = true } }
                     }
+                },
+                onNavigateToRegistration = {
+                    navController.navigate("nutritionist_registration")
                 }
             )
         }
@@ -48,6 +53,22 @@ fun AppNavigation() {
             NutritionistDashboardScreen(
                 onSignOut = {
                     navController.navigate("login") { popUpTo(0) }
+                }
+            )
+        }
+        
+        composable("admin_dashboard") {
+            AdminDashboardScreen(
+                onSignOut = {
+                    navController.navigate("login") { popUpTo(0) }
+                }
+            )
+        }
+        
+        composable("nutritionist_registration") {
+            NutritionistRegistrationScreen(
+                onBack = {
+                    navController.popBackStack()
                 }
             )
         }

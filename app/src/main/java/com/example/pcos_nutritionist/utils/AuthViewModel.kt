@@ -2,6 +2,8 @@ package com.example.pcos_nutritionist.utils
 
 import android.content.Context
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.pcos_nutritionist.api.RetrofitClient
 import com.google.firebase.FirebaseApp
 import com.google.firebase.FirebaseOptions
 import com.google.firebase.auth.EmailAuthProvider
@@ -9,6 +11,7 @@ import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 
 sealed class AuthState {
     object Authenticated : AuthState()
@@ -50,8 +53,16 @@ class AuthViewModel : ViewModel() {
                 if (task.isSuccessful) {
                     _authState.value = AuthState.Authenticated
                     // Determine role
-                    val role = if (email.trim().lowercase() == "nutritionisthamra@gmail.com") "Nutritionist" else "Patient"
-                    onRoleDetermined(role)
+                    viewModelScope.launch {
+                        try {
+                            val roleResponse = RetrofitClient.apiService.getUserRole(email)
+                            onRoleDetermined(roleResponse.role)
+                        } catch (e: Exception) {
+                            // Fallback
+                            val role = if (email.trim().lowercase() == "hamrajekeen@gmail.com") "Admin" else if (email.trim().lowercase() == "nutritionisthamra@gmail.com") "Nutritionist" else "Patient"
+                            onRoleDetermined(role)
+                        }
+                    }
                 } else {
                     _authState.value = AuthState.Error(task.exception?.message ?: "Something Went Wrong")
                 }
@@ -105,6 +116,18 @@ class AuthViewModel : ViewModel() {
             onError("Error: ${e.message}")
         }
     }
+
+    fun createNutritionistAccount(
+        context: Context,
+        email: String,
+        pass: String,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        // Reuse patient account creation logic since it simply creates a secondary Auth user
+        createPatientAccount(context, email, pass, onSuccess, onError)
+    }
+
 
     fun changePassword(
         currentPass: String,

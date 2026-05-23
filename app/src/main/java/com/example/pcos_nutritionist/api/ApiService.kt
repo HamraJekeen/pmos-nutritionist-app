@@ -148,6 +148,31 @@ data class HistoricalPlanResponse(
     val patient_inputs: PatientInput
 )
 
+data class NutritionistRegistrationInput(
+    val name: String,
+    val email: String,
+    val slmc_number: String,
+    val nic_number: String
+)
+
+data class NutritionistRegistrationResponse(
+    val id: Int,
+    val name: String,
+    val email: String,
+    val slmc_number: String,
+    val nic_number: String,
+    val status: String,
+    val created_at: String
+)
+
+data class AdminVerifyInput(
+    val registration_id: Int
+)
+
+data class UserRoleResponse(
+    val role: String
+)
+
 // --- Api Service ---
 
 interface ApiService {
@@ -195,6 +220,18 @@ interface ApiService {
     
     @GET("/api/nutritionist/plans/history")
     suspend fun getPlanHistory(): List<HistoricalPlanResponse>
+    
+    @POST("/api/nutritionist/register")
+    suspend fun registerNutritionist(@Body input: NutritionistRegistrationInput): GenericResponse
+    
+    @GET("/api/admin/nutritionists/pending")
+    suspend fun getPendingNutritionists(): List<NutritionistRegistrationResponse>
+    
+    @POST("/api/admin/nutritionists/verify")
+    suspend fun verifyNutritionist(@Body input: AdminVerifyInput): GenericResponse
+    
+    @GET("/api/user/role")
+    suspend fun getUserRole(@retrofit2.http.Query("email") email: String): UserRoleResponse
 }
 
 object RetrofitClient {
