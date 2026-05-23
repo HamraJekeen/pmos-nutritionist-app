@@ -923,7 +923,7 @@ def register_nutritionist(input_data: NutritionistRegistrationInput):
         # Check if email already exists
         cursor.execute("SELECT id FROM nutritionist_registrations WHERE email = ?", input_data.email)
         if cursor.fetchone():
-            return HTTPException(status_code=400, detail="Email already registered")
+            raise HTTPException(status_code=400, detail="Email already registered")
             
         cursor.execute("""
             INSERT INTO nutritionist_registrations (name, email, slmc_number, nic_number)
@@ -934,7 +934,7 @@ def register_nutritionist(input_data: NutritionistRegistrationInput):
         conn.close()
         return {"message": "Registration submitted successfully. Pending admin approval."}
     except Exception as e:
-        return HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/admin/nutritionists/pending", response_model=List[NutritionistRegistrationResponse])
 def get_pending_nutritionists():
@@ -963,7 +963,36 @@ def get_pending_nutritionists():
             ))
         return results
     except Exception as e:
-        return HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/admin/nutritionists/verified", response_model=List[NutritionistRegistrationResponse])
+def get_verified_nutritionists():
+    try:
+        conn = get_sql_connection()
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT id, name, email, slmc_number, nic_number, status, created_at
+            FROM nutritionist_registrations
+            WHERE status = 'Verified'
+            ORDER BY created_at DESC
+        """)
+        rows = cursor.fetchall()
+        conn.close()
+        
+        results = []
+        for r in rows:
+            results.append(NutritionistRegistrationResponse(
+                id=r[0],
+                name=r[1],
+                email=r[2],
+                slmc_number=r[3],
+                nic_number=r[4],
+                status=r[5],
+                created_at=r[6].strftime("%Y-%m-%d %H:%M:%S") if r[6] else ""
+            ))
+        return results
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/admin/nutritionists/verify")
 def verify_nutritionist(input_data: AdminVerifyInput):
@@ -976,13 +1005,32 @@ def verify_nutritionist(input_data: AdminVerifyInput):
             WHERE id = ?
         """, input_data.registration_id)
         if cursor.rowcount == 0:
-            return HTTPException(status_code=404, detail="Registration not found")
+            raise HTTPException(status_code=404, detail="Registration not found")
             
         conn.commit()
         conn.close()
         return {"message": "Nutritionist verified successfully"}
     except Exception as e:
-        return HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.delete("/api/admin/nutritionists/{registration_id}")
+def delete_nutritionist(registration_id: int):
+    try:
+        conn = get_sql_connection()
+        cursor = conn.cursor()
+        cursor.execute("""
+            DELETE FROM nutritionist_registrations
+            WHERE id = ?
+        """, registration_id)
+        
+        if cursor.rowcount == 0:
+            raise HTTPException(status_code=404, detail="Nutritionist profile not found")
+            
+        conn.commit()
+        conn.close()
+        return {"message": "Nutritionist profile deleted successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/user/role")
 def get_user_role(email: str):

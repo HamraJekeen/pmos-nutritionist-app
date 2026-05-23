@@ -139,8 +139,12 @@ fun NutritionistRegistrationScreen(onBack: () -> Unit) {
                                 nic_number = nicNumber
                             )
                             val response = RetrofitClient.apiService.registerNutritionist(input)
-                            Toast.makeText(context, response.message, Toast.LENGTH_LONG).show()
+                            val toastMsg = response.message ?: "Registration submitted successfully."
+                            Toast.makeText(context, toastMsg, Toast.LENGTH_LONG).show()
                             onBack()
+                        } catch (e: retrofit2.HttpException) {
+                            val errorBody = e.response()?.errorBody()?.string() ?: e.message()
+                            Toast.makeText(context, "Registration failed: $errorBody", Toast.LENGTH_LONG).show()
                         } catch (e: Exception) {
                             Toast.makeText(context, "Registration failed: ${e.message}", Toast.LENGTH_LONG).show()
                         } finally {

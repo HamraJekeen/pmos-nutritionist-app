@@ -1349,12 +1349,22 @@ fun CreatePatientDialog(onDismiss: () -> Unit) {
                             isCreating = false
                             Toast.makeText(context, "Account created successfully", Toast.LENGTH_SHORT).show()
                             
+                            val subject = Uri.encode("Your PMOS Nutritionist App Account")
+                            val body = Uri.encode(
+                                "Hello,\n\n" +
+                                "Your account has been created by your Nutritionist.\n" +
+                                "Your temporary password is: $password\n\n" +
+                                "Please log in to the PMOS Nutritionist App and change your password in the Profile section.\n\n" +
+                                "Thank you."
+                            )
                             val intent = Intent(Intent.ACTION_SENDTO).apply {
-                                data = Uri.parse("mailto:$email")
-                                putExtra(Intent.EXTRA_SUBJECT, "Your PMOS Nutritionist App Account")
-                                putExtra(Intent.EXTRA_TEXT, "Hello,\n\nYour account has been created.\nYour password is: $password\n\nPlease log in to the PMOS Nutritionist App and change your password in the Profile section.\n\nThank you.")
+                                data = Uri.parse("mailto:$email?subject=$subject&body=$body")
                             }
-                            context.startActivity(Intent.createChooser(intent, "Send Email"))
+                            try {
+                                context.startActivity(intent)
+                            } catch (e: android.content.ActivityNotFoundException) {
+                                Toast.makeText(context, "No email app found to send the email.", Toast.LENGTH_LONG).show()
+                            }
                             
                             onDismiss()
                         },

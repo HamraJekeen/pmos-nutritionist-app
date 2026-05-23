@@ -230,6 +230,12 @@ interface ApiService {
     @POST("/api/admin/nutritionists/verify")
     suspend fun verifyNutritionist(@Body input: AdminVerifyInput): GenericResponse
     
+    @GET("/api/admin/nutritionists/verified")
+    suspend fun getVerifiedNutritionists(): List<NutritionistRegistrationResponse>
+    
+    @retrofit2.http.DELETE("/api/admin/nutritionists/{id}")
+    suspend fun deleteNutritionist(@Path("id") id: Int): GenericResponse
+    
     @GET("/api/user/role")
     suspend fun getUserRole(@retrofit2.http.Query("email") email: String): UserRoleResponse
 }
