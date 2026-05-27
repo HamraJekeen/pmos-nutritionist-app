@@ -1,5 +1,7 @@
 package com.example.pcos_nutritionist.screens
 
+import androidx.compose.ui.res.painterResource
+import com.example.pcos_nutritionist.R
 import android.widget.Toast
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -55,6 +57,7 @@ fun NutritionistDashboardScreen(onSignOut: () -> Unit) {
     
     // Patient Data State
     var patientInputs by remember { mutableStateOf<com.example.pcos_nutritionist.api.PatientInput?>(null) }
+    var patientDetailsForm by remember { mutableStateOf<com.example.pcos_nutritionist.api.PatientDetailsFormInput?>(null) }
     var editablePlan by remember { mutableStateOf<Map<String, Map<String, com.example.pcos_nutritionist.api.MealDetail>>>(emptyMap()) }
     
     var activities by remember { mutableStateOf("") }
@@ -110,10 +113,16 @@ fun NutritionistDashboardScreen(onSignOut: () -> Unit) {
                 }
                 
                 patientInputs = RetrofitClient.apiService.getPatientInputs(pId)
+                try {
+                    patientDetailsForm = RetrofitClient.apiService.getPatientDetailsForm(pId)
+                } catch (e: Exception) {
+                    patientDetailsForm = null
+                }
             } catch (e: Exception) {
                 Toast.makeText(context, "Failed to load patient details", Toast.LENGTH_SHORT).show()
                 editablePlan = emptyMap()
                 patientInputs = null
+                patientDetailsForm = null
             } finally {
                 isLoadingDetails = false
             }
@@ -130,7 +139,13 @@ fun NutritionistDashboardScreen(onSignOut: () -> Unit) {
                     } else if (selectedPatientTrackingId != null) {
                         IconButton(onClick = { selectedPatientTrackingId = null }) { Icon(Icons.Default.ArrowBack, null) }
                     } else {
-                        IconButton(onClick = {}) { Icon(Icons.Default.Menu, null) }
+                        Image(
+                            painter = painterResource(id = R.drawable.login_logo),
+                            contentDescription = "App Logo",
+                            modifier = Modifier
+                                .padding(start = 16.dp, end = 8.dp)
+                                .size(32.dp)
+                        )
                     }
                 },
                 actions = {
@@ -165,6 +180,7 @@ fun NutritionistDashboardScreen(onSignOut: () -> Unit) {
                     ReviewScreenContent(
                         patient = selectedPatient!!,
                         inputs = patientInputs,
+                        detailsForm = patientDetailsForm,
                         plan = editablePlan,
                         onPlanUpdate = { editablePlan = it },
                         activities = activities,
@@ -320,6 +336,7 @@ fun PatientListItem(p: com.example.pcos_nutritionist.api.PendingPatient, onClick
 fun ReviewScreenContent(
     patient: com.example.pcos_nutritionist.api.PendingPatient,
     inputs: com.example.pcos_nutritionist.api.PatientInput?,
+    detailsForm: com.example.pcos_nutritionist.api.PatientDetailsFormInput?,
     plan: Map<String, Map<String, com.example.pcos_nutritionist.api.MealDetail>>,
     onPlanUpdate: (Map<String, Map<String, com.example.pcos_nutritionist.api.MealDetail>>) -> Unit,
     activities: String,
@@ -354,10 +371,11 @@ fun ReviewScreenContent(
         }
         
         // Tabs
-        TabRow(
+        ScrollableTabRow(
             selectedTabIndex = selectedTab,
             containerColor = Color.White,
             contentColor = PrimaryViolet,
+            edgePadding = 0.dp,
             indicator = { tabPositions ->
                 TabRowDefaults.SecondaryIndicator(Modifier.tabIndicatorOffset(tabPositions[selectedTab]), color = PrimaryViolet)
             }
@@ -365,6 +383,7 @@ fun ReviewScreenContent(
             Tab(selected = selectedTab == 0, onClick = { selectedTab = 0 }, text = { Text("Profile") })
             Tab(selected = selectedTab == 1, onClick = { selectedTab = 1 }, text = { Text("Diet Plan") })
             Tab(selected = selectedTab == 2, onClick = { selectedTab = 2 }, text = { Text("Explanation") })
+            Tab(selected = selectedTab == 3, onClick = { selectedTab = 3 }, text = { Text("Details Form") })
         }
         
         Box(modifier = Modifier.weight(1f).padding(16.dp)) {
@@ -377,6 +396,7 @@ fun ReviewScreenContent(
                 )
                 1 -> EditableDietPlanTab(plan, onPlanUpdate, activities, onActivitiesUpdate, sleep, onSleepUpdate, water, onWaterUpdate, notes, onNotesUpdate)
                 2 -> DietExplanationTab(inputs?.explanation)
+                3 -> PatientDetailsFormTab(detailsForm)
             }
         }
         
@@ -685,6 +705,46 @@ fun DietExplanationTab(explanation: List<String>?) {
                 Text(text = expl, fontSize = 14.sp, color = TextColor)
             }
         }
+    }
+}
+
+@Composable
+fun PatientDetailsFormTab(details: com.example.pcos_nutritionist.api.PatientDetailsFormInput?) {
+    if (details == null) {
+        Box(modifier = Modifier.fillMaxSize())
+        return
+    }
+
+    Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+        Text("Dietary Habits", fontWeight = FontWeight.Bold, color = PrimaryViolet, fontSize = 18.sp)
+        Spacer(modifier = Modifier.height(12.dp))
+        
+        DetailItem("Breakfast", details.breakfast)
+        DetailItem("Lunch", details.lunch)
+        DetailItem("Dinner", details.dinner)
+        
+        Spacer(modifier = Modifier.height(24.dp))
+        Text("Lifestyle & Health", fontWeight = FontWeight.Bold, color = PrimaryViolet, fontSize = 18.sp)
+        Spacer(modifier = Modifier.height(12.dp))
+        
+        DetailItem("Irregular Periods", details.irregular_periods)
+        DetailItem("Period Cycle Length", "${details.period_cycle_length} days")
+        DetailItem("Fast Food Frequency", details.fast_food_freq)
+        DetailItem("Fruit/Veg Frequency", details.veg_fruit_freq)
+        DetailItem("Work Hours", "${details.work_hours} hours/day")
+        DetailItem("Stress Level (1-10)", details.stress_level.toString())
+        
+        Spacer(modifier = Modifier.height(40.dp))
+    }
+}
+
+@Composable
+fun DetailItem(label: String, value: String) {
+    Column(modifier = Modifier.padding(bottom = 16.dp)) {
+        Text(text = label, fontSize = 12.sp, color = SubtitleColor)
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(text = value.ifBlank { "Not provided" }, fontSize = 16.sp, color = TextColor)
+        Divider(modifier = Modifier.padding(top = 8.dp), color = Color(0xFFF0F0F0))
     }
 }
 

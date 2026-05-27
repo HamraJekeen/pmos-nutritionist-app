@@ -143,6 +143,22 @@ def initialize_db(conn):
                 created_at DATETIME DEFAULT GETDATE()
             )
         """)
+        cursor.execute("""
+            IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='patient_details_form' and xtype='U')
+            CREATE TABLE patient_details_form (
+                patient_id VARCHAR(50) PRIMARY KEY,
+                breakfast NVARCHAR(MAX),
+                lunch NVARCHAR(MAX),
+                dinner NVARCHAR(MAX),
+                irregular_periods VARCHAR(50),
+                period_cycle_length VARCHAR(50),
+                fast_food_freq VARCHAR(50),
+                veg_fruit_freq VARCHAR(50),
+                work_hours VARCHAR(50),
+                stress_level INT,
+                updated_at DATETIME DEFAULT GETDATE()
+            )
+        """)
         conn.commit()
     except Exception as e:
         print("Error initializing DB:", e)
@@ -210,6 +226,18 @@ class QuestionInput(BaseModel):
 class AnswerInput(BaseModel):
     question_id: int
     answer_text: str
+
+class PatientDetailsFormInput(BaseModel):
+    patient_id: str
+    breakfast: str
+    lunch: str
+    dinner: str
+    irregular_periods: str
+    period_cycle_length: str
+    fast_food_freq: str
+    veg_fruit_freq: str
+    work_hours: str
+    stress_level: int
 
 class HistoricalPlanResponse(BaseModel):
     id: int
@@ -1056,6 +1084,64 @@ def get_user_role(email: str):
         if email == "nutritionisthamra@gmail.com":
             return {"role": "Nutritionist"}
         return {"role": "Patient"}
+
+@app.post("/api/patient/details_form")
+def save_patient_details_form(input_data: PatientDetailsFormInput):
+    try:
+        conn = get_sql_connection()
+        cursor = conn.cursor()
+        
+        # Check if exists
+        cursor.execute("SELECT patient_id FROM patient_details_form WHERE patient_id = ?", input_data.patient_id)
+        if cursor.fetchone():
+            cursor.execute("""
+                UPDATE patient_details_form 
+                SET breakfast = ?, lunch = ?, dinner = ?, irregular_periods = ?,
+                    period_cycle_length = ?, fast_food_freq = ?, veg_fruit_freq = ?,
+                    work_hours = ?, stress_level = ?, updated_at = GETDATE()
+                WHERE patient_id = ?
+            """, input_data.breakfast, input_data.lunch, input_data.dinner, input_data.irregular_periods,
+                 input_data.period_cycle_length, input_data.fast_food_freq, input_data.veg_fruit_freq,
+                 input_data.work_hours, input_data.stress_level, input_data.patient_id)
+        else:
+            cursor.execute("""
+                INSERT INTO patient_details_form 
+                (patient_id, breakfast, lunch, dinner, irregular_periods, period_cycle_length, fast_food_freq, veg_fruit_freq, work_hours, stress_level)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, input_data.patient_id, input_data.breakfast, input_data.lunch, input_data.dinner, input_data.irregular_periods,
+                 input_data.period_cycle_length, input_data.fast_food_freq, input_data.veg_fruit_freq, input_data.work_hours, input_data.stress_level)
+                 
+        conn.commit()
+        conn.close()
+        return {"message": "Details form saved successfully"}
+    except Exception as e:
+        return HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/nutritionist/patient/{patient_id}/details_form")
+def get_patient_details_form(patient_id: str):
+    try:
+        conn = get_sql_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT breakfast, lunch, dinner, irregular_periods, period_cycle_length, fast_food_freq, veg_fruit_freq, work_hours, stress_level FROM patient_details_form WHERE patient_id = ?", patient_id)
+        row = cursor.fetchone()
+        conn.close()
+        
+        if row:
+            return {
+                "patient_id": patient_id,
+                "breakfast": row[0],
+                "lunch": row[1],
+                "dinner": row[2],
+                "irregular_periods": row[3],
+                "period_cycle_length": row[4],
+                "fast_food_freq": row[5],
+                "veg_fruit_freq": row[6],
+                "work_hours": row[7],
+                "stress_level": row[8]
+            }
+        return {"error": "Form not found"}
+    except Exception as e:
+        return HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
     import uvicorn

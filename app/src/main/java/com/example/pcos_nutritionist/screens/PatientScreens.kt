@@ -48,7 +48,7 @@ import org.json.JSONObject
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PatientDashboardScreen(onSignOut: () -> Unit) {
+fun PatientDashboardScreen(onSignOut: () -> Unit, onNavigateToDetailsForm: () -> Unit) {
     val authViewModel: AuthViewModel = viewModel()
     val userId = authViewModel.getCurrentUser()?.uid ?: "UNKNOWN"
     
@@ -175,7 +175,8 @@ fun PatientDashboardScreen(onSignOut: () -> Unit) {
                         patientInputs = patientInputs,
                         onGenerateNew = { showForm = true },
                         onViewPlan = { currentTab = 1 },
-                        onViewHistory = { showHistory = true }
+                        onViewHistory = { showHistory = true },
+                        onNavigateToDetailsForm = onNavigateToDetailsForm
                     )
                     1 -> DietPlanTab(
                         planStatus = planStatus,
@@ -217,7 +218,8 @@ fun DashboardHome(
     patientInputs: PatientInput?,
     onGenerateNew: () -> Unit,
     onViewPlan: () -> Unit,
-    onViewHistory: () -> Unit
+    onViewHistory: () -> Unit,
+    onNavigateToDetailsForm: () -> Unit
 ) {
     var showNotifications by remember { mutableStateOf(false) }
 
@@ -349,7 +351,7 @@ fun DashboardHome(
             QuickActionItem(Icons.Default.Add, "Generate New\nDiet Plan", onGenerateNew)
             QuickActionItem(Icons.Default.Visibility, "View My\nPlan", onViewPlan)
             QuickActionItem(Icons.Default.History, "Input\nHistory", onViewHistory)
-            QuickActionItem(Icons.Default.Person, "My\nProfile", { /* profile */ })
+            QuickActionItem(Icons.Default.Assignment, "Details\nForm", onNavigateToDetailsForm)
         }
         
         Spacer(modifier = Modifier.height(40.dp))

@@ -10,6 +10,7 @@ import com.example.pcos_nutritionist.screens.PatientDashboardScreen
 import com.example.pcos_nutritionist.screens.NutritionistDashboardScreen
 import com.example.pcos_nutritionist.screens.AdminDashboardScreen
 import com.example.pcos_nutritionist.screens.NutritionistRegistrationScreen
+import com.example.pcos_nutritionist.screens.PatientDetailsFormScreen
 
 @Composable
 fun AppNavigation() {
@@ -45,6 +46,9 @@ fun AppNavigation() {
             PatientDashboardScreen(
                 onSignOut = {
                     navController.navigate("login") { popUpTo(0) }
+                },
+                onNavigateToDetailsForm = {
+                    navController.navigate("patient_details_form")
                 }
             )
         }
@@ -67,6 +71,14 @@ fun AppNavigation() {
         
         composable("nutritionist_registration") {
             NutritionistRegistrationScreen(
+                onBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+        
+        composable("patient_details_form") {
+            PatientDetailsFormScreen(
                 onBack = {
                     navController.popBackStack()
                 }

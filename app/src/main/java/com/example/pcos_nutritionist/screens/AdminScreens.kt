@@ -148,6 +148,7 @@ fun NutritionistRegistrationItem(
     val coroutineScope = rememberCoroutineScope()
     val authViewModel: AuthViewModel = viewModel()
     var showVerifyDialog by remember { mutableStateOf(false) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
 
     if (showVerifyDialog) {
         VerifyNutritionistDialog(
@@ -157,6 +158,39 @@ fun NutritionistRegistrationItem(
                 showVerifyDialog = false
                 onVerifyComplete()
             }
+        )
+    }
+
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = { Text("Delete Application", fontWeight = FontWeight.Bold, color = Color.Red) },
+            text = { Text("Are you sure you want to delete ${reg.name}'s application? This action cannot be undone.", color = SubtitleColor) },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showDeleteDialog = false
+                        coroutineScope.launch {
+                            try {
+                                val response = RetrofitClient.apiService.deleteNutritionist(reg.id)
+                                Toast.makeText(context, response.message, Toast.LENGTH_SHORT).show()
+                                onVerifyComplete()
+                            } catch (e: Exception) {
+                                Toast.makeText(context, "Failed to delete: ${e.message}", Toast.LENGTH_LONG).show()
+                            }
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
+                ) {
+                    Text("Delete")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteDialog = false }) {
+                    Text("Cancel", color = PrimaryViolet)
+                }
+            },
+            containerColor = Color.White
         )
     }
 
@@ -215,6 +249,43 @@ fun NutritionistRegistrationItem(
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Text("Verify & Create")
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                OutlinedButton(
+                    onClick = {
+                        val subject = Uri.encode("Update on PMOS Nutritionist Application")
+                        val body = Uri.encode(
+                            "Hello ${reg.name},\n\n" +
+                            "We have carefully reviewed your application for the PMOS Nutritionist program.\n\n" +
+                            "Unfortunately, we are unable to accept your application at this time due to issues verifying your SLMC / NIC details. If you believe this is a mistake, please reply to this email with valid documentation.\n\n" +
+                            "Best Regards,\nPMOS Admin Team"
+                        )
+                        val intent = Intent(Intent.ACTION_SENDTO).apply {
+                            data = Uri.parse("mailto:${reg.email}?subject=$subject&body=$body")
+                        }
+                        try {
+                            context.startActivity(intent)
+                        } catch (e: android.content.ActivityNotFoundException) {
+                            Toast.makeText(context, "No email app found to send the email.", Toast.LENGTH_LONG).show()
+                        }
+                    },
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text("Send Reject Mail")
+                }
+
+                Button(
+                    onClick = { showDeleteDialog = true },
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text("Delete")
                 }
             }
         }

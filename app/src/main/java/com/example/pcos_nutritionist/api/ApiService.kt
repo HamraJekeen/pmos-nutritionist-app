@@ -97,6 +97,19 @@ data class AnswerInput(
     val answer_text: String
 )
 
+data class PatientDetailsFormInput(
+    val patient_id: String,
+    val breakfast: String,
+    val lunch: String,
+    val dinner: String,
+    val irregular_periods: String,
+    val period_cycle_length: String,
+    val fast_food_freq: String,
+    val veg_fruit_freq: String,
+    val work_hours: String,
+    val stress_level: Int
+)
+
 data class DailyTrackingData(
     val water_glasses: Int,
     val workout_minutes: Int,
@@ -238,6 +251,12 @@ interface ApiService {
     
     @GET("/api/user/role")
     suspend fun getUserRole(@retrofit2.http.Query("email") email: String): UserRoleResponse
+
+    @POST("/api/patient/details_form")
+    suspend fun submitPatientDetailsForm(@Body input: PatientDetailsFormInput): GenericResponse
+    
+    @GET("/api/nutritionist/patient/{patient_id}/details_form")
+    suspend fun getPatientDetailsForm(@Path("patient_id") patientId: String): PatientDetailsFormInput
 }
 
 object RetrofitClient {
