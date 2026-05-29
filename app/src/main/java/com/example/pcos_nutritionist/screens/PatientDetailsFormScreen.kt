@@ -78,7 +78,7 @@ fun PatientDetailsFormScreen(onBack: () -> Unit) {
             OutlinedTextField(
                 value = breakfast,
                 onValueChange = { breakfast = it },
-                label = { Text("What do you normally take for breakfast?") },
+                label = { Text("What do you normally eat for breakfast, and what portion size do you typically consume?") },
                 modifier = Modifier.fillMaxWidth(),
                 minLines = 2,
                 colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = PrimaryViolet)
@@ -87,7 +87,7 @@ fun PatientDetailsFormScreen(onBack: () -> Unit) {
             OutlinedTextField(
                 value = lunch,
                 onValueChange = { lunch = it },
-                label = { Text("What do you normally take for lunch?") },
+                label = { Text("What do you normally eat for lunch, and what portion size do you typically consume?") },
                 modifier = Modifier.fillMaxWidth(),
                 minLines = 2,
                 colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = PrimaryViolet)
@@ -96,7 +96,7 @@ fun PatientDetailsFormScreen(onBack: () -> Unit) {
             OutlinedTextField(
                 value = dinner,
                 onValueChange = { dinner = it },
-                label = { Text("What do you normally take for dinner?") },
+                label = { Text("What do you normally eat for dinner, and what portion size do you typically consume?") },
                 modifier = Modifier.fillMaxWidth(),
                 minLines = 2,
                 colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = PrimaryViolet)

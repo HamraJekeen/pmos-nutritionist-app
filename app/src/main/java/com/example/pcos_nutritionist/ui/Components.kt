@@ -76,7 +76,7 @@ fun ModernTextField(
     TextField(
         value = value,
         onValueChange = onValueChange,
-        placeholder = { Text(text = label, color = Color.Gray) },
+        label = { Text(text = label, color = Color.Gray) },
         modifier = modifier
             .fillMaxWidth()
             .height(56.dp),
