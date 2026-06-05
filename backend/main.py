@@ -154,11 +154,18 @@ def initialize_db(conn):
                 period_cycle_length VARCHAR(50),
                 fast_food_freq VARCHAR(50),
                 veg_fruit_freq VARCHAR(50),
-                work_hours VARCHAR(50),
+                regular_exercise VARCHAR(50),
+                exercise_frequency VARCHAR(100),
                 stress_level INT,
                 updated_at DATETIME DEFAULT GETDATE()
             )
         """)
+        try:
+            cursor.execute("ALTER TABLE patient_details_form DROP COLUMN work_hours")
+            cursor.execute("ALTER TABLE patient_details_form ADD regular_exercise VARCHAR(50)")
+            cursor.execute("ALTER TABLE patient_details_form ADD exercise_frequency VARCHAR(100)")
+        except:
+            pass
         conn.commit()
     except Exception as e:
         print("Error initializing DB:", e)
@@ -236,7 +243,8 @@ class PatientDetailsFormInput(BaseModel):
     period_cycle_length: str
     fast_food_freq: str
     veg_fruit_freq: str
-    work_hours: str
+    regular_exercise: str
+    exercise_frequency: str
     stress_level: int
 
 class HistoricalPlanResponse(BaseModel):
@@ -1098,18 +1106,18 @@ def save_patient_details_form(input_data: PatientDetailsFormInput):
                 UPDATE patient_details_form 
                 SET breakfast = ?, lunch = ?, dinner = ?, irregular_periods = ?,
                     period_cycle_length = ?, fast_food_freq = ?, veg_fruit_freq = ?,
-                    work_hours = ?, stress_level = ?, updated_at = GETDATE()
+                    regular_exercise = ?, exercise_frequency = ?, stress_level = ?, updated_at = GETDATE()
                 WHERE patient_id = ?
             """, input_data.breakfast, input_data.lunch, input_data.dinner, input_data.irregular_periods,
                  input_data.period_cycle_length, input_data.fast_food_freq, input_data.veg_fruit_freq,
-                 input_data.work_hours, input_data.stress_level, input_data.patient_id)
+                 input_data.regular_exercise, input_data.exercise_frequency, input_data.stress_level, input_data.patient_id)
         else:
             cursor.execute("""
                 INSERT INTO patient_details_form 
-                (patient_id, breakfast, lunch, dinner, irregular_periods, period_cycle_length, fast_food_freq, veg_fruit_freq, work_hours, stress_level)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                (patient_id, breakfast, lunch, dinner, irregular_periods, period_cycle_length, fast_food_freq, veg_fruit_freq, regular_exercise, exercise_frequency, stress_level)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, input_data.patient_id, input_data.breakfast, input_data.lunch, input_data.dinner, input_data.irregular_periods,
-                 input_data.period_cycle_length, input_data.fast_food_freq, input_data.veg_fruit_freq, input_data.work_hours, input_data.stress_level)
+                 input_data.period_cycle_length, input_data.fast_food_freq, input_data.veg_fruit_freq, input_data.regular_exercise, input_data.exercise_frequency, input_data.stress_level)
                  
         conn.commit()
         conn.close()
@@ -1122,7 +1130,7 @@ def get_patient_details_form(patient_id: str):
     try:
         conn = get_sql_connection()
         cursor = conn.cursor()
-        cursor.execute("SELECT breakfast, lunch, dinner, irregular_periods, period_cycle_length, fast_food_freq, veg_fruit_freq, work_hours, stress_level FROM patient_details_form WHERE patient_id = ?", patient_id)
+        cursor.execute("SELECT breakfast, lunch, dinner, irregular_periods, period_cycle_length, fast_food_freq, veg_fruit_freq, regular_exercise, exercise_frequency, stress_level FROM patient_details_form WHERE patient_id = ?", patient_id)
         row = cursor.fetchone()
         conn.close()
         
@@ -1136,8 +1144,9 @@ def get_patient_details_form(patient_id: str):
                 "period_cycle_length": row[4],
                 "fast_food_freq": row[5],
                 "veg_fruit_freq": row[6],
-                "work_hours": row[7],
-                "stress_level": row[8]
+                "regular_exercise": row[7],
+                "exercise_frequency": row[8],
+                "stress_level": row[9]
             }
         return {"error": "Form not found"}
     except Exception as e:

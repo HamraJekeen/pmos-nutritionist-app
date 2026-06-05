@@ -182,6 +182,38 @@ fun NutritionistDetailedTrackingTab(patientId: String) {
                 }
             }
         }
+        Spacer(modifier = Modifier.height(32.dp))
+        Text("Daily Activity", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+        Spacer(modifier = Modifier.height(16.dp))
+
+        val water = trackingData?.daily?.water_glasses ?: 0
+        val workout = trackingData?.daily?.workout_minutes ?: 0
+        val notes = trackingData?.daily?.notes ?: "None"
+
+        Card(modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp), shape = RoundedCornerShape(20.dp), colors = CardDefaults.cardColors(containerColor = Color.White)) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.DirectionsRun, null, tint = Color(0xFFE53935), modifier = Modifier.size(24.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(text = "Workout: $workout min", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
+                }
+                Spacer(modifier = Modifier.height(12.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.LocalDrink, null, tint = Color(0xFF42A5F5), modifier = Modifier.size(24.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(text = "Water: $water glasses", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
+                }
+                Spacer(modifier = Modifier.height(12.dp))
+                Row(verticalAlignment = Alignment.Top) {
+                    Icon(Icons.Default.NoteAlt, null, tint = Color(0xFFFFA000), modifier = Modifier.size(24.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Column {
+                        Text(text = "Notes & Activity Type:", fontSize = 12.sp, color = SubtitleColor)
+                        Text(text = if (notes.isBlank()) "None" else notes, fontSize = 14.sp)
+                    }
+                }
+            }
+        }
         Spacer(modifier = Modifier.height(40.dp))
     }
 }

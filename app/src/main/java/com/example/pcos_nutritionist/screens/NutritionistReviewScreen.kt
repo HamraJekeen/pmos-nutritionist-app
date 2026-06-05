@@ -446,7 +446,8 @@ fun PatientDetailsFormTab(details: com.example.pcos_nutritionist.api.PatientDeta
         DetailItem("Period Cycle Length", "${details.period_cycle_length} days")
         DetailItem("Fast Food Frequency", details.fast_food_freq)
         DetailItem("Fruit/Veg Frequency", details.veg_fruit_freq)
-        DetailItem("Work Hours", "${details.work_hours} hours/day")
+        DetailItem("Regular Exercise", details.regular_exercise)
+        DetailItem("Exercise Frequency", details.exercise_frequency)
         DetailItem("Stress Level (1-10)", details.stress_level.toString())
         
         Spacer(modifier = Modifier.height(40.dp))

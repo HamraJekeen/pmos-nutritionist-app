@@ -285,8 +285,12 @@ fun DailyActivityDialog(
 ) {
     var water by remember { mutableStateOf(initialWater) }
     var workout by remember { mutableStateOf(initialWorkout) }
-    var notes by remember { mutableStateOf(initialNotes) }
-    var activityType by remember { mutableStateOf("Workout") }
+    
+    val parsedType = if (initialNotes.contains(" - ")) initialNotes.substringBefore(" - ") else "Workout"
+    val parsedNotes = if (initialNotes.contains(" - ")) initialNotes.substringAfter(" - ") else initialNotes
+
+    var notes by remember { mutableStateOf(parsedNotes) }
+    var activityType by remember { mutableStateOf(parsedType) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -354,7 +358,10 @@ fun DailyActivityDialog(
         },
         confirmButton = {
             Button(
-                onClick = { onSubmit(water, workout, notes) },
+                onClick = { 
+                    val combinedNotes = if (notes.isNotBlank()) "$activityType - $notes" else activityType
+                    onSubmit(water, workout, combinedNotes) 
+                },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(24.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = PrimaryViolet)

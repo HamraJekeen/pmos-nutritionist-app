@@ -106,7 +106,8 @@ data class PatientDetailsFormInput(
     val period_cycle_length: String,
     val fast_food_freq: String,
     val veg_fruit_freq: String,
-    val work_hours: String,
+    val regular_exercise: String,
+    val exercise_frequency: String,
     val stress_level: Int
 )
 

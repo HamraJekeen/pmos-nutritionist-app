@@ -42,7 +42,9 @@ fun PatientDetailsFormScreen(onBack: () -> Unit) {
     var periodCycleLength by remember { mutableStateOf("") }
     var fastFoodFreq by remember { mutableStateOf("Occasionally") }
     var vegFruitFreq by remember { mutableStateOf("Few times a week") }
-    var workHours by remember { mutableStateOf("") }
+    var regularExercise by remember { mutableStateOf("No") }
+    var exerciseFrequency by remember { mutableStateOf("Daily (30 minutes – 1 hour)") }
+    var otherExerciseFrequency by remember { mutableStateOf("") }
     var stressLevel by remember { mutableStateOf(5f) }
 
     var isLoading by remember { mutableStateOf(false) }
@@ -50,6 +52,8 @@ fun PatientDetailsFormScreen(onBack: () -> Unit) {
     val irregularPeriodsOptions = listOf("Rarely", "Occasionally", "Often", "Always")
     val fastFoodOptions = listOf("Daily", "Weekly", "Occasionally", "Rarely")
     val vegFruitOptions = listOf("Every meal", "Once a day", "Few times a week", "Rarely")
+    val regularExerciseOptions = listOf("Yes", "No")
+    val exerciseFrequencyOptions = listOf("Daily (30 minutes – 1 hour)", "Daily (More than 1 hour)", "2–3 days per week", "4–5 days per week", "Other")
 
     Scaffold(
         topBar = {
@@ -132,14 +136,31 @@ fun PatientDetailsFormScreen(onBack: () -> Unit) {
                 onSelectionChange = { vegFruitFreq = it }
             )
 
-            OutlinedTextField(
-                value = workHours,
-                onValueChange = { workHours = it },
-                label = { Text("How many hours do you work daily?") },
-                modifier = Modifier.fillMaxWidth(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = PrimaryViolet)
+            DropdownSelector(
+                label = "Do you engage in regular exercise?",
+                options = regularExerciseOptions,
+                selectedOption = regularExercise,
+                onSelectionChange = { regularExercise = it }
             )
+
+            if (regularExercise == "Yes") {
+                DropdownSelector(
+                    label = "Indicate frequency and duration:",
+                    options = exerciseFrequencyOptions,
+                    selectedOption = exerciseFrequency,
+                    onSelectionChange = { exerciseFrequency = it }
+                )
+
+                if (exerciseFrequency == "Other") {
+                    OutlinedTextField(
+                        value = otherExerciseFrequency,
+                        onValueChange = { otherExerciseFrequency = it },
+                        label = { Text("Please specify") },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = PrimaryViolet)
+                    )
+                }
+            }
 
             Column {
                 Text(text = "Rate your stress level (1 - 10): ${stressLevel.toInt()}", fontWeight = FontWeight.Bold, fontSize = 14.sp)
@@ -163,18 +184,23 @@ fun PatientDetailsFormScreen(onBack: () -> Unit) {
                     coroutineScope.launch {
                         isLoading = true
                         try {
-                            val input = PatientDetailsFormInput(
-                                patient_id = userId,
-                                breakfast = breakfast,
-                                lunch = lunch,
-                                dinner = dinner,
-                                irregular_periods = irregularPeriods,
-                                period_cycle_length = periodCycleLength,
-                                fast_food_freq = fastFoodFreq,
-                                veg_fruit_freq = vegFruitFreq,
-                                work_hours = workHours,
-                                stress_level = stressLevel.toInt()
-                            )
+                                val finalExerciseFreq = if (regularExercise == "Yes") {
+                                    if (exerciseFrequency == "Other") otherExerciseFrequency else exerciseFrequency
+                                } else "N/A"
+                                
+                                val input = PatientDetailsFormInput(
+                                    patient_id = userId,
+                                    breakfast = breakfast,
+                                    lunch = lunch,
+                                    dinner = dinner,
+                                    irregular_periods = irregularPeriods,
+                                    period_cycle_length = periodCycleLength,
+                                    fast_food_freq = fastFoodFreq,
+                                    veg_fruit_freq = vegFruitFreq,
+                                    regular_exercise = regularExercise,
+                                    exercise_frequency = finalExerciseFreq,
+                                    stress_level = stressLevel.toInt()
+                                )
                             RetrofitClient.apiService.submitPatientDetailsForm(input)
                             Toast.makeText(context, "Details saved successfully", Toast.LENGTH_SHORT).show()
                             onBack()
