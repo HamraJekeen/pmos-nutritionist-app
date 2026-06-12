@@ -254,7 +254,7 @@ class HistoricalPlanResponse(BaseModel):
     created_at: str
     plan_data: Dict[str, Dict[str, Dict[str, str]]]
     notes: str
-    patient_inputs: Dict[str, Any]
+    patient_inputs: Optional[Dict[str, Any]] = None
 
 class NutritionistRegistrationInput(BaseModel):
     name: str
@@ -706,8 +706,8 @@ def get_plan_history():
         history = []
         for row in rows:
             try:
-                inputs = json.loads(row[5]) if row[5] else {}
-                p_name = inputs.get("patient_name")
+                inputs = json.loads(row[5]) if row[5] else None
+                p_name = inputs.get("patient_name") if inputs else None
                 if not p_name:
                     p_name = fallback_names.get(row[1], "Unknown")
                 

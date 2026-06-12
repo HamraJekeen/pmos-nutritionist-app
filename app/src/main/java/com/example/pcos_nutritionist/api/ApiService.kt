@@ -159,7 +159,7 @@ data class HistoricalPlanResponse(
     val created_at: String,
     val plan_data: Map<String, Map<String, MealDetail>>,
     val notes: String,
-    val patient_inputs: PatientInput
+    val patient_inputs: PatientInput?
 )
 
 data class NutritionistRegistrationInput(
