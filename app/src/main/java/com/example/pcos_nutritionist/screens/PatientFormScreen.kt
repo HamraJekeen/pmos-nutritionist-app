@@ -288,7 +288,7 @@ fun StepIndicator(current: Int, total: Int) {
 @Composable
 fun FormBasicInfo(name: String, dob: String, weight: String, height: String, onName: (String)->Unit, onDob: (String)->Unit, onWeight: (String)->Unit, onHeight: (String)->Unit) {
     Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
-        Text("Step 1 of 6", color = PrimaryViolet, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+        Text("Step 1 of 7", color = PrimaryViolet, fontSize = 12.sp, fontWeight = FontWeight.Bold)
         Text("Basic Information", fontSize = 20.sp, fontWeight = FontWeight.Bold)
         Spacer(modifier = Modifier.height(24.dp))
         ModernTextField(value = name, onValueChange = onName, label = "Full Name", leadingIcon = Icons.Default.Person)
