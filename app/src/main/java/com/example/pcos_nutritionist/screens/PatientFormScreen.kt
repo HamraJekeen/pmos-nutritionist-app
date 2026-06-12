@@ -328,7 +328,7 @@ fun FormBasicInfo(name: String, dob: String, weight: String, height: String, onN
 @Composable
 fun FormHormones(fsh: String, lh: String, tsh: String, prl: String, prg: String, rbs: String, amh: String, onFsh: (String)->Unit, onLh: (String)->Unit, onTsh: (String)->Unit, onPrl: (String)->Unit, onPrg: (String)->Unit, onRbs: (String)->Unit, onAmh: (String)->Unit) {
     Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
-        Text("Step 2 of 6", color = PrimaryViolet, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+        Text("Step 2 of 7", color = PrimaryViolet, fontSize = 12.sp, fontWeight = FontWeight.Bold)
         Text("Hormonal Levels", fontSize = 20.sp, fontWeight = FontWeight.Bold)
         Spacer(modifier = Modifier.height(24.dp))
         ModernTextField(value = fsh, onValueChange = onFsh, label = "FSH (mIU/mL)", keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
@@ -351,7 +351,7 @@ fun FormHormones(fsh: String, lh: String, tsh: String, prl: String, prg: String,
 @Composable
 fun FormSymptoms(wg: Boolean, hg: Boolean, sd: Boolean, hl: Boolean, p: Boolean, ip: Boolean, onWg: (Boolean)->Unit, onHg: (Boolean)->Unit, onSd: (Boolean)->Unit, onHl: (Boolean)->Unit, onP: (Boolean)->Unit, onIp: (Boolean)->Unit) {
     Column {
-        Text("Step 3 of 6", color = PrimaryViolet, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+        Text("Step 3 of 7", color = PrimaryViolet, fontSize = 12.sp, fontWeight = FontWeight.Bold)
         Text("PMOS Symptoms", fontSize = 20.sp, fontWeight = FontWeight.Bold)
         Text("(Select all that apply)", color = SubtitleColor, fontSize = 12.sp)
         Spacer(modifier = Modifier.height(24.dp))
@@ -399,7 +399,7 @@ fun SymptomCard(data: SymptomData) {
 @Composable
 fun FormConditions(d: Boolean, t: Boolean, h: Boolean, onD: (Boolean)->Unit, onT: (Boolean)->Unit, onH: (Boolean)->Unit) {
     Column {
-        Text("Step 4 of 6", color = PrimaryViolet, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+        Text("Step 4 of 7", color = PrimaryViolet, fontSize = 12.sp, fontWeight = FontWeight.Bold)
         Text("Medical Conditions", fontSize = 20.sp, fontWeight = FontWeight.Bold)
         Spacer(modifier = Modifier.height(24.dp))
         ConditionCheckRow("Diabetes", d, onD)
@@ -427,7 +427,7 @@ fun ConditionCheckRow(label: String, checked: Boolean, onToggle: (Boolean)->Unit
 @Composable
 fun FormAllergies(options: List<String>, selected: Set<String>, onUpdate: (Set<String>)->Unit) {
     Column {
-        Text("Step 5 of 6", color = PrimaryViolet, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+        Text("Step 5 of 7", color = PrimaryViolet, fontSize = 12.sp, fontWeight = FontWeight.Bold)
         Text("Food Allergies", fontSize = 20.sp, fontWeight = FontWeight.Bold)
         Text("(Select all that apply)", color = SubtitleColor, fontSize = 12.sp)
         Spacer(modifier = Modifier.height(16.dp))
@@ -461,7 +461,7 @@ fun FormAllergies(options: List<String>, selected: Set<String>, onUpdate: (Set<S
 @Composable
 fun FormPcosType(types: List<String>, selected: String, onUpdate: (String)->Unit) {
     Column {
-        Text("Step 6 of 6", color = PrimaryViolet, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+        Text("Step 6 of 7", color = PrimaryViolet, fontSize = 12.sp, fontWeight = FontWeight.Bold)
         Text("PMOS Subtype", fontSize = 20.sp, fontWeight = FontWeight.Bold)
         Spacer(modifier = Modifier.height(24.dp))
         
